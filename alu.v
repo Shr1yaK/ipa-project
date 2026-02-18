@@ -11,7 +11,6 @@ module alu_64_bit(
     input [63:0] b,
     input [3:0] opcode,
     output [63:0] result,
-    output cout, 
     output carry_flag, 
     output overflow_flag, 
     output zero_flag

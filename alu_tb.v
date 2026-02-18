@@ -5,7 +5,7 @@ module alu_64_bit_tb;
     reg [63:0] a, b;
     reg [3:0] opcode;
     wire [63:0] result;
-    wire cout, carry_flag, overflow_flag, zero_flag;
+    wire carry_flag, overflow_flag, zero_flag;
     integer pass_count = 0, total_tests = 55;
     
     // Control codes
@@ -26,7 +26,6 @@ module alu_64_bit_tb;
         .b(b),
         .opcode(opcode),
         .result(result),
-        .cout(cout),
         .carry_flag(carry_flag),
         .overflow_flag(overflow_flag),
         .zero_flag(zero_flag)
