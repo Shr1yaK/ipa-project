@@ -1,0 +1,5 @@
+*.out
+run
+test
+data_mem_test
+.DS_Store

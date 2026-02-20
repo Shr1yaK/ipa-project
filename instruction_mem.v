@@ -7,4 +7,10 @@ module instruction_memory #(
     input wire [63:0] addr,
     output wire [31:0] instr
 );
+ // Memory array
+    reg [7:0] mem [0:MEM_SIZE-1];
+    
+    // File reading variables
+    integer file, status, i;
+    reg [7:0] hex_value;
 endmodule
