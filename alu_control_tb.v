@@ -14,38 +14,38 @@ module tb_alu_control;
     );
 
     initial begin
-        $display("ALUOp | Funct3 | Funct7 | ALUControl | Expected | Type");
-        $display("-----------------------------------------------------");
+        $display("ALUOp\t| Funct3| Funct7\t| ALUControl\t| Expected\t| Type");
+        $display("-------------------------------------------------------------------------------------");
 
         //ld, sd, addi
         ALUOp = 2'b00; funct3 = 3'b000; funct7 = 1'b0; #10;
-        $display("  %b  |   %b  |    %b   |    %b    |   0000   | LD/SD/ADDI", ALUOp, funct3, funct7, ALUControl);
+        $display("%b\t| %b\t| %b\t\t| %b\t\t| 0000\t\t| LD/SD/ADDI", ALUOp, funct3, funct7, ALUControl);
 
         //beq-uses sub
         ALUOp = 2'b01; funct3 = 3'b000; funct7 = 1'b0; #10;
-        $display("  %b  |   %b  |    %b   |    %b    |   1000   | BEQ (SUB)", ALUOp, funct3, funct7, ALUControl);
+        $display("%b\t| %b\t| %b\t\t| %b\t\t| 1000\t\t| BEQ (SUB)", ALUOp, funct3, funct7, ALUControl);
 
         //add
         ALUOp = 2'b10; funct3 = 3'b000; funct7 = 1'b0; #10;
-        $display("  %b  |   %b  |    %b   |    %b    |   0000   | R-ADD", ALUOp, funct3, funct7, ALUControl);
+        $display("%b\t| %b\t| %b\t\t| %b\t\t| 0000\t\t| R-ADD", ALUOp, funct3, funct7, ALUControl);
 
-        // sub
+        //sub
         ALUOp = 2'b10; funct3 = 3'b000; funct7 = 1'b1; #10;
-        $display("  %b  |   %b  |    %b   |    %b    |   1000   | R-SUB", ALUOp, funct3, funct7, ALUControl);
+        $display("%b\t| %b\t| %b\t\t| %b\t\t| 1000\t\t| R-SUB", ALUOp, funct3, funct7, ALUControl);
 
         //and
         ALUOp = 2'b10; funct3 = 3'b111; funct7 = 1'b0; #10;
-        $display("  %b  |   %b  |    %b   |    %b    |   0111   | R-AND", ALUOp, funct3, funct7, ALUControl);
+        $display("%b\t| %b\t| %b\t\t| %b\t\t| 0111\t\t| R-AND", ALUOp, funct3, funct7, ALUControl);
 
         //or
         ALUOp = 2'b10; funct3 = 3'b110; funct7 = 1'b0; #10;
-        $display("  %b  |   %b  |    %b   |    %b    |   0110   | R-OR", ALUOp, funct3, funct7, ALUControl);
+        $display("%b\t| %b\t| %b\t\t| %b\t\t| 0110\t\t| R-OR", ALUOp, funct3, funct7, ALUControl);
 
         //default
         ALUOp = 2'b11; funct3 = 3'bxxx; funct7 = 1'bx; #10;
-        $display("  %b  |   %b  |    %b   |    %b    |   0000   | Default", ALUOp, funct3, funct7, ALUControl);
+        $display("%b\t| %b\t| %b\t\t| %b\t\t| 0000\t\t| Default", ALUOp, funct3, funct7, ALUControl);
 
-        $display("-----------------------------------------------------");
+        $display("-------------------------------------------------------------------------------------");
         $finish;
     end
 endmodule
