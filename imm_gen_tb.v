@@ -6,7 +6,6 @@ module tb_imm_gen;
     imm_gen uut (.instruction(instruction), .imm(imm));
 
     initial begin
-        $display("\nTesting Immediate Generator...");
         //addi x1, x2, 5 -> imm = 5
         instruction = 32'h00500093; #10;
         $display("5: Result %h", imm);
@@ -22,3 +21,4 @@ module tb_imm_gen;
     end
 
 endmodule
+
