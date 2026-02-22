@@ -62,6 +62,8 @@ module data_mem_tb;
     endtask
 
     initial begin
+        $dumpfile("data_mem_tb.vcd");
+        $dumpvars(0, data_mem_tb); 
         clk = 0;
         reset = 1;
         address = 0;
