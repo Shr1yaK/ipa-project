@@ -1,6 +1,15 @@
+# Mac
+.DS_Store
+
+# Icarus output
+a.out
 *.out
-run
+*.vcd
+
+# Generated text outputs
+alu_results.txt
+register_file.txt
+
+# Executables
 test
 data_mem_test
-.DS_Store
-*.vcd.DS_Store
