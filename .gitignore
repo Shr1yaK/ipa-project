@@ -1,16 +1,31 @@
-# Mac
+# ==============================
+# OS files
+# ==============================
 .DS_Store
 
-# Icarus output
+# ==============================
+# Simulation / Icarus outputs
+# ==============================
 a.out
-*.out
 *.vcd
+*.out
+*.log
 
-# Generated text outputs
-alu_results.txt
+# ==============================
+# Generated result files
+# ==============================
 register_file.txt
-run
+alu_results.txt
+data_mem.txt
 
-# Executables
+# ==============================
+# Local scripts / executables
+# ==============================
+run
 test
 data_mem_test
+
+# ==============================
+# Editor files
+# ==============================
+.vscode/
