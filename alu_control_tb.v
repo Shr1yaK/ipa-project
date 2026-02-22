@@ -8,7 +8,6 @@ module tb_alu_control;
     alu_control uut (.ALUOp(ALUOp), .funct3(funct3), .funct7(funct7), .ALUControl(ALUControl));
 
     initial begin
-        $display("\nTesting ALU Control...");
         // ld sd addi add
         ALUOp = 2'b00; #10;
         $display("ALUOp 00: Result %b", ALUControl);
@@ -21,4 +20,5 @@ module tb_alu_control;
         ALUOp = 2'b10; funct3 = 3'b111; #10;
         $display("R-type AND: Result %b", ALUControl);
     end
+
 endmodule
