@@ -10,6 +10,9 @@ module data_mem_tb;
     reg MemWrite;
     wire [63:0] read_data;
 
+    integer test_count;
+    integer pass_count;
+
     data_mem uut (
         .clk(clk),
         .reset(reset),
@@ -23,6 +26,41 @@ module data_mem_tb;
     // Clock generation
     always #5 clk = ~clk;
 
+    task run_test;
+        input [63:0] addr;
+        input [63:0] data;
+        begin
+            test_count = test_count + 1;
+
+            // Write
+            address = addr;
+            write_data = data;
+            MemWrite = 1;
+            MemRead = 0;
+            #10;
+            MemWrite = 0;
+
+            // Read
+            MemRead = 1;
+            #10;
+            MemRead = 0;
+
+            $display("Test %0d:", test_count);
+            $display("  Address = %h", addr);
+            $display("  Written = %h", data);
+            $display("  Read    = %h", read_data);
+
+            if (read_data === data) begin
+                $display("  Status: PASS\n");
+                pass_count = pass_count + 1;
+            end else begin
+                $display("  Status: FAIL\n");
+            end
+
+            #10;
+        end
+    endtask
+
     initial begin
         clk = 0;
         reset = 1;
@@ -30,24 +68,21 @@ module data_mem_tb;
         write_data = 0;
         MemRead = 0;
         MemWrite = 0;
+        test_count = 0;
+        pass_count = 0;
 
         #10 reset = 0;
 
-        // Write test value
-        address = 64'd100;
-        write_data = 64'h1122334455667788;
-        MemWrite = 1;
-        #10;
-        MemWrite = 0;
+        // Run multiple tests
+        run_test(64'd100, 64'h1122334455667788);
+        run_test(64'd200, 64'hdeadbeefcafebabe);
+        run_test(64'd300, 64'hffffffffffffffff);
+        run_test(64'd400, 64'h0000000000000000);
 
-        // Read back
-        MemRead = 1;
-        #10;
-        MemRead = 0;
-
-        #10;
-
-        $display("Read Data = %h", read_data);
+        $display("=====================================");
+        $display("FINAL RESULT: Passed %0d/%0d tests",
+                 pass_count, test_count);
+        $display("=====================================");
 
         $finish;
     end
