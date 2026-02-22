@@ -7,7 +7,7 @@ module imm_gen(
 always @(*) begin
     case (instruction[6:0])
 
-        7'b0010011,7'b0000011: begin//Itype,addi,ld
+        7'b0010011,7'b0000011: begin //Itype,addi,ld
             imm = {{52{instruction[31]}}, instruction[31:20]};
         end
 
@@ -16,10 +16,11 @@ always @(*) begin
         end
 
         7'b1100011: begin//beq
-            imm = {{51{instruction[31]}},instruction[31],instruction[7],instruction[30:25],instruction[11:8]};
+            imm = {{51{instruction[31]}},instruction[31],instruction[7],instruction[30:25],instruction[11:8],1'b0};
+
         end
 
-        default: begin//Rtype,add,sub,and,or
+        default: begin // Rtype,add,sub,and,or
             imm = 64'b0;
         end
 

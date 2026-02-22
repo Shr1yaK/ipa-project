@@ -23,29 +23,36 @@ module seq_tb;
         reset = 1;
         cycle_count = 0;
 
-        // Release reset after some time
+        $dumpfile("cpu.vcd");
+        $dumpvars(0, seq_tb);
+
         #10 reset = 0;
     end
 
-    // Cycle counter
+    // Debug + cycle monitor
     always @(posedge clk) begin
-        if (!reset)
-            cycle_count = cycle_count + 1;
-    end
-
-        always @(posedge clk) begin
         if (!reset) begin
-            if (instruction == 32'b0) begin
-                $display("Program finished.");
-                $display("Total cycles = %0d", cycle_count);
+            cycle_count = cycle_count + 1;
 
-                // Call register dump task
-                // uut.reg_file_inst.dump_registers();
+            $display("C%0d | PC=%0d | Instr=%h | ALU=%0d | MR=%b MW=%b | x1=%0d x2=%0d x3=%0d x4=%0d",
+                cycle_count,
+                uut.pc_out,
+                instruction,
+                uut.alu_result,
+                uut.MemRead,
+                uut.MemWrite,
+                uut.reg_file_inst.registers[1],
+                uut.reg_file_inst.registers[2],
+                uut.reg_file_inst.registers[3],
+                uut.reg_file_inst.registers[4]
+            );
 
+
+            if (cycle_count > 60) begin
+                $display("Timeout reached.");
                 $finish;
             end
         end
     end
-
 
 endmodule
