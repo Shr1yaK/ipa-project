@@ -11,6 +11,7 @@ module alu_64_bit(
     input [63:0] b,
     input [3:0] opcode,
     output [63:0] result,
+    output cout,
     output carry_flag, 
     output overflow_flag, 
     output zero_flag
@@ -27,6 +28,7 @@ assign result=temp_result;
 assign carry_flag=temp_cf;
 assign overflow_flag=temp_of;
 assign zero_flag=temp_zf;
+assign cout = temp_cf;
     localparam  ADD_Oper  = 4'b0000,
                 SLL_Oper  = 4'b0001,
                 SLT_Oper  = 4'b0010,
