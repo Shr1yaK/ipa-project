@@ -9,7 +9,7 @@ module tb_imm_gen;
         $display("\nTesting Immediate Generator...");
         //addi x1, x2, 5 -> imm = 5
         instruction = 32'h00500093; #10;
-        $display("5: Result %d", imm);
+        $display("5: Result %h", imm);
 
         //addi x1, x2, -1 -> imm = FFFFFFFFFFFFFFFF
         instruction = 32'hfff00093; #10;
@@ -20,4 +20,5 @@ module tb_imm_gen;
         instruction = 32'hfe000ce3; #10;
         $display("beq: Result %h", imm);
     end
+
 endmodule
