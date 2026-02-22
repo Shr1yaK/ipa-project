@@ -9,6 +9,7 @@ a.out
 # Generated text outputs
 alu_results.txt
 register_file.txt
+run
 
 # Executables
 test
