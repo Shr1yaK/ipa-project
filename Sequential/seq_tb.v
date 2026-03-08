@@ -47,28 +47,17 @@ module seq_tb;
     if (!reset) begin
         cycle_count = cycle_count + 1;
 
-        $display("Cycle %0d | PC=%0d | Instr=%h",
-                 cycle_count,
-                 uut.pc_out,
-                 instruction);
-
-        if (uut.pc_out >= 64'd60) begin
-
-            $display("---- Program Completed ----");
-            $display("Total Cycles = %0d", cycle_count);
-
+        if (uut.pc_out >= 64'd300) begin
+            
             file_handle = $fopen("register_file.txt", "w");
 
             for (i = 0; i < 32; i = i + 1) begin
-                $fdisplay(file_handle, "%016h",
-                          uut.reg_file_inst.registers[i]);
+                $fdisplay(file_handle, "%016h", uut.reg_file_inst.registers[i]);
             end
-
+            
             $fdisplay(file_handle, "%0d", cycle_count);
 
             $fclose(file_handle);
-
-            $display("Register file dumped to register_file.txt");
             $finish;
         end
     end

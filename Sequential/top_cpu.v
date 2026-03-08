@@ -156,9 +156,10 @@ module top_cpu(
     wire take_branch;
 
     assign take_branch = Branch & zero_flag;
-
-    assign pc_in = (take_branch) ? (pc_out + imm_out)
-                                 : (pc_out + 64'd4);
+    //and a11(take_branch,Branch,zero_flag);
+    wire [63:0] imm_out_shifted;
+    assign imm_out_shifted={imm_out[62:0], 1'b0};
+    assign pc_in = (take_branch) ? (pc_out + imm_out_shifted) : (pc_out + 64'h4);
 
     pc pc_inst (
         .clk(clk),
