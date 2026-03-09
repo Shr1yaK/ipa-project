@@ -1,3 +1,5 @@
+Forwarding Unit
+
 module Forwarding_Unit(
     input wire [4:0] ID_EX_rs1, ID_EX_rs2,
     input wire [4:0] EX_MEM_rd, MEM_WB_rd,
@@ -7,14 +9,12 @@ module Forwarding_Unit(
     always @(*) begin
         ForwardA = 2'b00; ForwardB = 2'b00;
 
-        // EX Hazard: Forwarding from EX/MEM register
+        //MEM to EX
         if (EX_MEM_RegWrite && (EX_MEM_rd != 0) && (EX_MEM_rd == ID_EX_rs1))
             ForwardA = 2'b10;
-        // MEM Hazard: Forwarding from MEM/WB register
-        // Note: Check EX Hazard first for priority 
+        //WB to EX
         else if (MEM_WB_RegWrite && (MEM_WB_rd != 0) && (MEM_WB_rd == ID_EX_rs1))
             ForwardA = 2'b01;
-
         if (EX_MEM_RegWrite && (EX_MEM_rd != 0) && (EX_MEM_rd == ID_EX_rs2))
             ForwardB = 2'b10;
         else if (MEM_WB_RegWrite && (MEM_WB_rd != 0) && (MEM_WB_rd == ID_EX_rs2))
