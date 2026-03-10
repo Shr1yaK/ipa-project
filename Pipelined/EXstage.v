@@ -1,5 +1,3 @@
-`include "alu.v"
-
 module EX_stage(
     input wire [63:0] read_data1, read_data2, imm, pc,
     input wire [63:0] EX_MEM_ALU_result, WB_data,

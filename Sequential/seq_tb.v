@@ -47,7 +47,7 @@ module seq_tb;
     if (!reset) begin
         cycle_count = cycle_count + 1;
 
-        if (uut.pc_out >= 64'd300) begin
+        if (uut.pc_out >= 64'd60) begin
             
             file_handle = $fopen("register_file.txt", "w");
 

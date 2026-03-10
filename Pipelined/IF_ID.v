@@ -50,9 +50,9 @@ module IF_ID(
         else begin
             temp <= temp;
             pc_in_reg <= pc_in_reg;
-            s1_temp <= instr_in[19:15];
-            rs2_temp <= instr_in[24:20];
-            rd_temp <= instr_in[11:7];
+            rs1_temp <= temp[19:15];
+            rs2_temp <= temp[24:20];
+            rd_temp <= temp[11:7];
         end
     end
 
