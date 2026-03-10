@@ -15,6 +15,7 @@
 `include "EX_MEM.v"
 `include "data_mem.v"
 `include "MEM_WB.v"
+`include "ld_sd_forward.v"
 //`include "processor.v"
 module processor_tb;
     reg clk, rst;
@@ -38,7 +39,7 @@ module processor_tb;
     //      to drain through ID → EX → MEM → WB.
     //
     //   3. cycle_count is incremented only for cycles where at least
-    //      one pipeline stage is doing real work — i.e., from the first
+    //      one pipeline stage is doing real work i.e., from the first
     //      valid fetch until the last WB completes.
     // ---------------------------------------------------------------
 

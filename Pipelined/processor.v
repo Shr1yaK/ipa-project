@@ -276,6 +276,24 @@ module processor(
 
     
     // ===== MEMORY STAGE =====
+    // Load-Store Forwarding Unit
+    wire ld_sd_forward_sel;
+    
+    ld_sd_forward ld_sd_fwd_unit(
+        .ld_rd(mem_wb_rd),
+        .sd_rs2_data(ex_mem_rd),
+        .ld_sd_mem_to_reg(mem_wb_MemtoReg),
+        .ld_sd_mem_write(ex_mem_MemWrite),
+        .ld_sd_sel(ld_sd_forward_sel)
+    );
+    
+    // Data Memory - with load-store forwarding
+    // If forwarding is needed, use mem_wb_mem_data instead of reading from memory
+    wire [63:0] mem_stage_read_data;
+    assign mem_stage_read_data = (ld_sd_forward_sel && mem_wb_MemtoReg) 
+                                  ? mem_wb_mem_data 
+                                  : mem_read_data;
+    
     // Data Memory
     data_mem data_memory(
         .clk(clk),
@@ -292,7 +310,7 @@ module processor(
         .clk(clk),
         .rst(rst),
         .alu_result_in(ex_mem_alu_result),
-        .mem_data_in(mem_read_data),
+        .mem_data_in(mem_stage_read_data),
         .rd_in(ex_mem_rd),
         .RegWrite_in(ex_mem_RegWrite),
         .MemtoReg_in(ex_mem_MemtoReg),
