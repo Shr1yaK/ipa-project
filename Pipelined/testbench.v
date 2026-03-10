@@ -62,6 +62,9 @@ module processor_tb;
     end
     
     initial begin
+        $dumpfile("processor.vcd"); 
+        $dumpvars(0, processor_tb);
+        
         cycle_count     = 0;
         program_started = 0;
         fetch_done      = 0;
