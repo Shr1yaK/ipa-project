@@ -21,7 +21,32 @@ module processor_tb;
     integer cycle_count;
     integer i, file_handle;
     integer status_file;
-    
+
+    // ---------------------------------------------------------------
+    // Pipeline-drain tracking for accurate cycle counting
+    //
+    // Strategy:
+    //   1. Detect the last valid instruction by watching the IF stage.
+    //      An instruction is "valid" when the PC is within the program
+    //      (instruction memory returns a non-NOP / non-X value).
+    //      We mark a fetch as valid when the fetched instruction is not
+    //      all-zeros (NOP / empty memory) and not X.
+    //
+    //   2. Once we see an invalid/empty fetch after at least one valid
+    //      instruction, we know the program has finished fetching.
+    //      We then wait exactly 4 more cycles for the last instruction
+    //      to drain through ID → EX → MEM → WB.
+    //
+    //   3. cycle_count is incremented only for cycles where at least
+    //      one pipeline stage is doing real work — i.e., from the first
+    //      valid fetch until the last WB completes.
+    // ---------------------------------------------------------------
+
+    reg         program_started;   // 1 after first valid instruction fetch
+    reg         fetch_done;        // 1 once PC has gone past valid program
+    reg  [2:0]  drain_counter;     // counts the 4 drain cycles after fetch_done
+    reg         sim_done;          // triggers end-of-simulation
+
     // Instantiate processor
     processor dut(
         .clk(clk),
@@ -36,7 +61,11 @@ module processor_tb;
     end
     
     initial begin
-        cycle_count = 0;
+        cycle_count     = 0;
+        program_started = 0;
+        fetch_done      = 0;
+        drain_counter   = 0;
+        sim_done        = 0;
         rst = 1;
         status_file = $fopen("status.txt", "w");
         
@@ -45,33 +74,62 @@ module processor_tb;
         
         #10;
         rst = 0;
-        
-        // Run for fixed number of cycles
-        repeat(100) @(posedge clk);
-        
+
+        // Wait until the simulation logic signals completion
+        @(posedge sim_done);
+
         // Write final results to file
         file_handle = $fopen("register_file.txt", "w");
-        
         for (i = 0; i < 32; i = i + 1) begin
             $fwrite(file_handle, "%016h\n", dut.reg_file.registers[i]);
         end
-        
         $fwrite(file_handle, "%d\n", cycle_count);
-        
         $fclose(file_handle);
         $fclose(status_file);
-        
-        $display("Simulation complete. Results written to register_file.txt");
+
+        $display("Simulation complete after %0d cycles. Results written to register_file.txt", cycle_count);
         $finish;
     end
     
-    // Count cycles and log status
+    // ---------------------------------------------------------------
+    // Cycle counter + pipeline-drain state machine
+    // ---------------------------------------------------------------
     always @(posedge clk) begin
         if (!rst) begin
-            cycle_count = cycle_count + 1;
-            
-            // Log stage outputs every cycle
-            log_pipeline_status();
+
+            // ---- Detect whether the current IF fetch is a real instruction ----
+            // Use === (4-state equality) to detect X/Z bits:
+            //   (x === 32'hxxxxxxxx) is TRUE only when all bits are X.
+            // A real instruction is one that is fully defined and non-zero.
+            if ((dut.instruction !== 32'hxxxxxxxx) &&
+                (dut.instruction !== 32'hzzzzzzzz) &&
+                (dut.instruction !== 32'h00000000)) begin
+                program_started <= 1;
+                fetch_done      <= 0;   // still fetching real instructions
+            end else if (program_started && !fetch_done) begin
+                // First idle/empty fetch after real work — program ROM exhausted
+                fetch_done <= 1;
+            end
+
+            // ---- Count cycles only while real work is in-flight ----
+            if (program_started && !sim_done) begin
+                cycle_count = cycle_count + 1;
+            end
+
+            // ---- Drain counter: 4 cycles to flush last instruction through ----
+            // ID(1) + EX(2) + MEM(3) + WB(4) after the last IF cycle
+            if (fetch_done && !sim_done) begin
+                if (drain_counter < 4) begin
+                    drain_counter <= drain_counter + 1;
+                end else begin
+                    sim_done <= 1;   // pipeline fully drained
+                end
+            end
+
+            // ---- Log status every active cycle ----
+            if (program_started && !sim_done) begin
+                log_pipeline_status();
+            end
         end
     end
     

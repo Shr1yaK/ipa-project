@@ -67,8 +67,11 @@ module processor(
         .pc_out(pc_out)
     );
     
-    // PC+4 adder
-    assign pc_next = pc_write ? (pc_out + 64'd4) : (pc_out+{imm_extended[62:0],1'b0});
+    // PC mux: branch taken -> branch_target (EX stage), stall -> hold, else PC+4
+    // branch_target is declared as a forward wire reference below - legal in Verilog.
+    assign pc_next = branch_flush  ? branch_target  :
+                     !pc_write     ? pc_out          :
+                                     (pc_out + 64'd4);
     
     // Instruction Memory
     instruction_memory inst_mem(
@@ -82,7 +85,7 @@ module processor(
     IF_ID if_id_reg(
         .clk(clk),
         .reset(rst),
-        .flush(hazard_flush),
+        .flush(hazard_flush),  // branch_flush excluded: pc_out already == branch_target
         .IF_ID_write(hazard_if_id_write),
         .IF_ID_pc_in(pc_out),
         .instr_in(instruction),
@@ -121,6 +124,7 @@ module processor(
     );
     
     // Register File
+    wire [63:0] reg_data1_raw, reg_data2_raw;
     register_file reg_file(
         .clk(clk),
         .reset(rst),
@@ -129,9 +133,16 @@ module processor(
         .write_reg(mem_wb_rd),
         .write_data(write_back_data),
         .reg_write_en(mem_wb_RegWrite),
-        .read_data1(reg_data1),
-        .read_data2(reg_data2)
+        .read_data1(reg_data1_raw),
+        .read_data2(reg_data2_raw)
     );
+
+    // WB-to-ID bypass: if WB is writing to the same register being read in ID
+    // this cycle, forward the write_back_data directly (fixes 3-cycle RAW gap)
+    assign reg_data1 = (mem_wb_RegWrite && (mem_wb_rd != 5'd0) && (mem_wb_rd == rs1))
+                       ? write_back_data : reg_data1_raw;
+    assign reg_data2 = (mem_wb_RegWrite && (mem_wb_rd != 5'd0) && (mem_wb_rd == rs2))
+                       ? write_back_data : reg_data2_raw;
     
     // Hazard Unit
     hazard_unit hazard(
@@ -152,7 +163,7 @@ module processor(
     ID_EX id_ex_reg(
         .clk(clk),
         .reset(rst),
-        .flush(control_mux_sel),
+        .flush(control_mux_sel || branch_flush),
         .RegWrite_in(RegWrite),
         .MemRead_in(MemRead),
         .MemWrite_in(MemWrite),
@@ -223,12 +234,13 @@ module processor(
     assign ex_alu_b = (id_ex_ALUSrc) ? id_ex_imm : ex_rs2_forwarded;
 
     // ALU
+    wire ex_carry_cout; // separate wire to avoid multi-driver on ex_carry
     alu_64_bit alu_unit(
         .a(ex_alu_a),
         .b(ex_alu_b),
         .opcode(alu_ctrl_out),
         .result(ex_alu_result),
-        .cout(ex_carry),
+        .cout(ex_carry_cout),
         .carry_flag(ex_carry),
         .overflow_flag(ex_overflow),
         .zero_flag(ex_zero)
@@ -237,6 +249,10 @@ module processor(
     // Branch flush: taken when Branch is set and ALU result is zero (BEQ)
     wire branch_flush;
     assign branch_flush = id_ex_Branch && ex_zero;
+
+    // Branch target = PC of the branch (in ID/EX stage) + sign-extended imm << 1
+    wire [63:0] branch_target;
+    assign branch_target = id_ex_pc + {id_ex_imm[62:0], 1'b0};
 
     // ===== EX/MEM PIPELINE REGISTER =====
     EX_MEM ex_mem_reg(

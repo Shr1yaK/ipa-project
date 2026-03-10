@@ -121,6 +121,7 @@ module processor(
     );
     
     // Register File
+    wire [63:0] reg_data1_raw, reg_data2_raw;
     register_file reg_file(
         .clk(clk),
         .reset(rst),
@@ -129,9 +130,16 @@ module processor(
         .write_reg(mem_wb_rd),
         .write_data(write_back_data),
         .reg_write_en(mem_wb_RegWrite),
-        .read_data1(reg_data1),
-        .read_data2(reg_data2)
+        .read_data1(reg_data1_raw),
+        .read_data2(reg_data2_raw)
     );
+
+    // WB-to-ID bypass: if WB is writing to the same register being read in ID
+    // this cycle, forward the write_back_data directly (fixes 3-cycle RAW gap)
+    assign reg_data1 = (mem_wb_RegWrite && (mem_wb_rd != 5'd0) && (mem_wb_rd == rs1))
+                       ? write_back_data : reg_data1_raw;
+    assign reg_data2 = (mem_wb_RegWrite && (mem_wb_rd != 5'd0) && (mem_wb_rd == rs2))
+                       ? write_back_data : reg_data2_raw;
     
     // Hazard Unit
     hazard_unit hazard(
@@ -223,12 +231,13 @@ module processor(
     assign ex_alu_b = (id_ex_ALUSrc) ? id_ex_imm : ex_rs2_forwarded;
 
     // ALU
+    wire ex_carry_cout; // separate wire to avoid multi-driver on ex_carry
     alu_64_bit alu_unit(
         .a(ex_alu_a),
         .b(ex_alu_b),
         .opcode(alu_ctrl_out),
         .result(ex_alu_result),
-        .cout(ex_carry),
+        .cout(ex_carry_cout),
         .carry_flag(ex_carry),
         .overflow_flag(ex_overflow),
         .zero_flag(ex_zero)
