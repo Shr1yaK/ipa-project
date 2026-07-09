@@ -8,7 +8,7 @@ The project was developed as part of the **Introduction to Processor Architectur
 
 ## Features
 
-### Single-Cycle Processor
+### Single-Cycle (Sequential) Processor
 
 - RV64I 64-bit datapath
 - Register file (32 × 64-bit)
@@ -54,8 +54,8 @@ Pipeline support includes:
 
 ```
 .
-├── single-cycle/
-├── pipeline/
+├── sequential/
+├── pipelined/
 ├── project_report.pdf
 └── README.md
 ```
